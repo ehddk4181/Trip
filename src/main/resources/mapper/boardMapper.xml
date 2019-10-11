@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.trip.guide.dao.BoardMapper">
+
+<!-- 전체 게시글 -->
+<select id="getTotal" parameterType="map" resultType="int">
+	select count(*) from trip_board where boardDeleted='N'
+	<choose>
+		<when test="searchItem == 'boardTitle'">
+			<if test="searchKeyword != NULL and searchKeyword != ''">
+				and boardTitle LIKE '%'||#{searchKeyword}||'%'
+			</if>
+		</when>
+		<when test="searchItem == 'boardType'">
+			<if test="searchKeyword != NULL and searchKeyword != ''">
+				and boardType LIKE '%'||#{searchKeyword}||'%'
+			</if>
+		</when>
+		<when test="searchItem == 'memberId'">
+			<if test="searchKeyword != NULL and searchKeyword != ''">
+				and memberId LIKE '%'||#{searchKeyword}||'%'
+			</if>
+		</when>
+		<otherwise>
+			and ${searchItem} LIKE '%'||#{searchKeyword}||'%'
+		</otherwise>
+	</choose> 
+</select>
+
+<!-- 게시글 메인  -->
+<select id="selectAll" parameterType="BoardVO" resultType="BoardVO"> 
+	select * from trip_board where boardDeleted='N'
+	<choose>
+		<when test="searchItem == 'boardTitle'">
+			<if test="searchKeyword != NULL and searchKeyword != ''">
+				AND boardTitle LIKE '%'||#{searchKeyword}||'%'
+			</if>
+		</when>
+		<when test="searchItem == 'boardType'">
+			<if test="searchKeyword != NULL and searchKeyword != ''">
+				AND boardType LIKE '%'||#{searchKeyword}||'%'
+			</if>
+		</when>
+		<when test="searchItem == 'memberId'">
+			<if test="searchKeyword != NULL and searchKeyword != ''">
+				AND memberId LIKE '%'||#{searchKeyword}||'%'
+			</if>
+		</when>
+		<otherwise>
+			AND ${searchItem} LIKE '%'||#{searchKeyword}||'%'
+		</otherwise>
+	</choose> 
+	order by BOARDNUM DESC
+</select>
+
+<!-- 게시글 등록  -->
+<insert id="insertBoard" parameterType="BoardVO">
+	insert into 
+		trip_board(
+		boardNum,
+		memberId, 
+		boardDeleted,
+		boardType,
+		boardDate, 
+		boardTitle, 
+		boardView, 
+		boardLocation
+		)values(
+		trip_board_seq.nextval, 
+		#{memberId}, 
+		'N',
+		#{boardType},
+		sysdate,
+		#{boardTitle}, 
+		#{boardView}, 
+		#{boardLocation}
+		)
+</insert>
+
+<!-- 게시글 이동 -->
+<select id="selectBoardByNum" parameterType="BoardVO" resultType="BoardVO">
+	select * from trip_board where boardNum=#{boardNum} and boardDeleted='N'
+</select>
+
+<!-- 게시글 수정 -->
+<update id="updateBoard" parameterType="BoardVO">
+	update 
+		trip_board 
+		set 
+			boardTitle = #{boardTitle}, 
+			boardType = #{boardType}, 
+			boardLocation = #{boardLocation}, 
+			boardView = #{boardView}
+		where 
+			boardNum = #{boardNum}
+		and	
+			memberId = #{memberId}
+</update>
+
+<!-- 게시글 삭제(한 것 처럼) -->
+<update id="deleteBoard" parameterType="BoardVO">
+	update
+		trip_board
+		set
+			boardDeleted='Y'
+		where boardNum = #{boardNum}
+</update>
+
+<!-- 댓글 삭제(한 것처럼 -->
+<update id="deleteComment" parameterType="CommentVO">
+	update
+		trip_comment
+		set
+			commentDeleted='Y'
+		where boardNum = #{boardNum}
+</update>
+
+<!-- 댓글 등록 -->
+<insert id="addComment" parameterType="CommentVO">
+	insert into
+		trip_comment(
+			commentNum,
+			boardNum,
+			memberId,
+			commentId,
+			commentView,
+			commentDate,
+			commentLocation,
+			commentDeleted
+		) values(
+			trip_comment_seq.nextval,
+			#{boardNum},
+			#{memberId},
+			#{commentId},
+			#{commentView},
+			sysdate,
+			<choose>
+			<when test="commentLocation == 1">'1',</when>
+			<when test="commentLocation == '2'">'2',</when>
+			<otherwise>'0',</otherwise>
+			</choose>
+			'N'
+		)
+</insert>
+
+<!-- 댓글 리스트 -->
+<select id="commentList" parameterType="CommentVO" resultType="CommentVO">
+	select * from trip_comment where boardNum = #{boardNum} and commentDeleted='N' order by commentDate DESC
+</select>
+
+<!-- 대댓글 리스트 -->
+<select id="replyList" parameterType="CommentVO" resultType="CommentVO">
+	select * from trip_comment where boardNum = #{boardNum} and commentLocation == '1' order by commentDate asc
+</select>
+
+</mapper>

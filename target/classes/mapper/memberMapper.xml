@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.trip.guide.dao.MemberMapper">
+<insert id="signup" parameterType="MemberVO">
+	insert into member
+	values(#{memberId},
+			#{memberPassword},
+			#{memberName},
+			#{memberPhone},
+			#{memberEmail},
+			#{memberBirth},
+			'bronze',
+			'1',
+			sysdate)
+</insert>
+
+<select id="selectOne" parameterType="MemberVO" resultType="MemberVO">
+	select *
+	from member
+	where memberId =#{memberId}
+	and memberDeleted = '1'
+</select>
+<select id="checkId" parameterType="MemberVO" resultType="MemberVO">
+	select *
+	from member
+	where memberId =#{memberId}
+	and memberDeleted = '1'
+</select>
+
+<select id="checkidEmail" parameterType="MemberVO" resultType="MemberVO">
+	select *
+	from member
+	where memberEmail = #{memberEmail}
+</select>
+
+<select id="login" parameterType="MemberVO" resultType="MemberVO">
+	select *
+	from member
+	where memberId = #{memberId} and memberPassword = #{memberPassword}
+					 and memberDeleted = '1'
+	
+</select>
+
+	<delete id="deleteId" parameterType="MemberVO">
+		update
+			member
+		set
+			memberDeleted = '0'
+			 
+		WHERE
+			memberId = #{memberId}
+			AND memberPassword = #{memberPassword}
+	</delete>
+	
+	<update id="updateId" parameterType="MemberVO">
+		update member
+		set
+			memberPassword = #{memberPassword},
+			memberName = #{memberName},
+			memberPhone = #{memberPhone},
+			memberEmail = #{memberEmail},
+			memberBirth = #{memberBirth}
+		where
+			memberId =#{memberId}
+		and memberDeleted = '1'
+	
+ 	</update>
+<!--		<update id="newPassword" parameterType="MemberVO">
+		update member
+		set memberPassword = #{memberPassword}
+		where memberEmail=#{memberEmail} 
+	</update> -->
+	<select id="idfind" parameterType="MemberVO" resultType="MemberVO">
+	select *
+	from member
+	where memberId =#{memberId} and memberEmail =#{memberEmail}
+</select>
+</mapper>
